@@ -10,9 +10,9 @@ import { useAuth } from '@/context/auth';
 import { get, put } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { dateFmt } from '@/lib/format';
-import { AdminPage, Field, Panel, Toggle } from '../components';
+import { AdminPage, Field, ImageInput, Panel, Toggle } from '../components';
 
-type Spec = { key: string; label: string; type: 'text' | 'textarea' | 'boolean' | 'icon' | 'list'; fields?: Spec[]; hint?: string };
+type Spec = { key: string; label: string; type: 'text' | 'textarea' | 'boolean' | 'icon' | 'list' | 'image'; fields?: Spec[]; hint?: string };
 
 const SCHEMAS: Record<string, { preview: string; fields: Spec[] }> = {
   announcement: {
@@ -33,6 +33,19 @@ const SCHEMAS: Record<string, { preview: string; fields: Spec[] }> = {
       { key: 'primaryCtaLink', label: 'Primary button link', type: 'text' },
       { key: 'secondaryCtaLabel', label: 'WhatsApp button label', type: 'text' },
       { key: 'badges', label: 'Trust badges', type: 'list', fields: [{ key: 'label', label: 'Label', type: 'text' }] },
+    ],
+  },
+  founder_message: {
+    preview: '/',
+    fields: [
+      { key: 'enabled', label: 'Show this section on the homepage', type: 'boolean' },
+      { key: 'photoUrl', label: 'Founder / owner photo (square or portrait, under 5 MB)', type: 'image' },
+      { key: 'name', label: 'Founder / owner name', type: 'text' },
+      { key: 'designation', label: 'Designation', type: 'text', hint: 'e.g. Founder & Owner, Sakshi Mobile' },
+      { key: 'eyebrow', label: 'Small heading', type: 'text' },
+      { key: 'title', label: 'Main heading', type: 'text' },
+      { key: 'message', label: 'Message for customers (Marathi or English — blank line = new paragraph)', type: 'textarea' },
+      { key: 'highlights', label: 'Promise badges', type: 'list', fields: [{ key: 'label', label: 'Text', type: 'text' }] },
     ],
   },
   why_choose: {
@@ -123,6 +136,12 @@ function ListField({ spec, path, control, register }: { spec: Spec; path: string
 
 function SpecField({ spec, path, control, register }: { spec: Spec; path: string; control: Control<any>; register: UseFormRegister<any> }) {
   if (spec.type === 'list') return <div className="sm:col-span-2"><ListField spec={spec} path={path} control={control} register={register} /></div>;
+  if (spec.type === 'image')
+    return (
+      <div className="sm:col-span-2">
+        <Controller control={control} name={path} render={({ field }) => <ImageInput label={spec.label} folder="cms" value={field.value as string} onChange={(v) => field.onChange(v ?? '')} />} />
+      </div>
+    );
   if (spec.type === 'boolean')
     return <Controller control={control} name={path} render={({ field }) => <label className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium sm:col-span-2">{spec.label}<Toggle checked={Boolean(field.value)} onChange={field.onChange} /></label>} />;
   return (
@@ -197,7 +216,7 @@ function Editor({ pageKey }: { pageKey: string }) {
 
 export default function Cms() {
   const { data, isLoading } = useQuery({ queryKey: ['admin', 'cms'], queryFn: () => get<{ items: { key: string; title: string; updatedAt: string }[] }>('/admin/cms') });
-  const [active, setActive] = useState('home_hero');
+  const [active, setActive] = useState('founder_message');
   if (isLoading) return <PageLoader />;
   return (
     <AdminPage title="Website CMS" subtitle="Edit website content without touching code — changes go live immediately">

@@ -115,7 +115,7 @@ router.get('/site', async (_req, res) => {
 router.get('/home', async (_req, res) => {
   const [cms, heroBanners, promoBanners, brandRows, featured, latest, accessories, offerRows, branchRows, reviews, stats] =
     await Promise.all([
-      getCmsMap(['home_hero', 'why_choose']),
+      getCmsMap(['home_hero', 'why_choose', 'founder_message']),
       db.select().from(banners).where(and(activeBannerCondition(), eq(banners.placement, 'HOME_HERO'))).orderBy(asc(banners.sortOrder)),
       db.select().from(banners).where(and(activeBannerCondition(), eq(banners.placement, 'HOME_PROMO'))).orderBy(asc(banners.sortOrder)),
       db.select().from(brands).where(activeBrand).orderBy(asc(brands.sortOrder), asc(brands.name)).limit(16),
@@ -135,6 +135,7 @@ router.get('/home', async (_req, res) => {
   res.json({
     hero: cms.home_hero ?? null,
     whyChoose: cms.why_choose ?? null,
+    founderMessage: cms.founder_message ?? null,
     heroBanners,
     promoBanners,
     brands: brandRows,

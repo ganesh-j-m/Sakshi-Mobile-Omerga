@@ -174,6 +174,16 @@ export type HomeData = {
     badges?: { label: string }[];
   } | null;
   whyChoose: { title?: string; subtitle?: string; items?: { icon: string; title: string; text: string }[] } | null;
+  founderMessage: {
+    enabled?: boolean;
+    eyebrow?: string;
+    title?: string;
+    message?: string;
+    name?: string;
+    designation?: string;
+    photoUrl?: string;
+    highlights?: { label: string }[];
+  } | null;
   heroBanners: Banner[];
   promoBanners: Banner[];
   brands: Brand[];

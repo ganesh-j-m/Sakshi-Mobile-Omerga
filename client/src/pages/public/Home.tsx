@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, CreditCard, Mail, MapPin, Phone, Quote, RefreshCw, Star, Zap } from 'lucide-react';
+import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, CreditCard, Mail, MapPin, Phone, Quote, RefreshCw, Star, UserRound, Zap } from 'lucide-react';
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { A11y, Autoplay, Navigation, Pagination as SwiperPagination } from 'swiper/modules';
@@ -194,6 +194,92 @@ function BannerSlide({ b }: { b: Banner }) {
   );
 }
 
+function FounderMessage({ data }: { data: NonNullable<HomeData['founderMessage']> }) {
+  const reduce = useReducedMotion();
+  const paragraphs = (data.message ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  if (!paragraphs.length) return null;
+  const initials = (data.name || 'Sakshi Mobile')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-br from-electric-50 via-white to-flame-50 py-16 lg:py-24" aria-labelledby="founder-title">
+      <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-violet-300/30 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-flame-300/30 blur-3xl" />
+      <div className="container relative grid items-center gap-10 lg:grid-cols-[400px_1fr] lg:gap-16">
+        {/* Photo */}
+        <Reveal className="relative mx-auto w-full max-w-[340px] lg:max-w-none">
+          <div className="absolute -inset-3 rotate-3 rounded-[2.5rem] bg-brand-gradient opacity-80 blur-[2px]" />
+          <motion.div
+            whileHover={reduce ? undefined : { rotate: -1.5, scale: 1.01 }}
+            className="relative aspect-[4/5] overflow-hidden rounded-[2.25rem] bg-navy-900 shadow-2xl ring-4 ring-white"
+          >
+            {data.photoUrl ? (
+              <img src={imageSrc(data.photoUrl, 800)} alt={data.name || data.designation || 'Founder'} loading="lazy" className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid-bg flex h-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-navy-900 via-violet-900 to-electric-800 text-white">
+                <span className="flex h-28 w-28 items-center justify-center rounded-full bg-white/10 text-4xl font-extrabold ring-2 ring-white/20">
+                  {data.name ? initials : <UserRound className="h-14 w-14" />}
+                </span>
+                <span className="text-xs uppercase tracking-[0.2em] text-white/60">Photo coming soon</span>
+              </div>
+            )}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/90 via-navy-950/40 to-transparent p-5 pt-16 text-white">
+              {data.name && <p className="text-lg font-bold">{data.name}</p>}
+              {data.designation && <p className="text-sm text-white/80">{data.designation}</p>}
+            </div>
+          </motion.div>
+          <motion.div
+            initial={reduce ? false : { opacity: 0, scale: 0.7 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+            className="absolute -right-3 -top-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-xl sm:-right-5"
+          >
+            <Quote className="h-8 w-8 fill-violet-100" />
+          </motion.div>
+        </Reveal>
+
+        {/* Message */}
+        <Reveal delay={0.1}>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-violet-600">{data.eyebrow || 'Message from our founder'}</p>
+          {data.title && (
+            <h2 id="founder-title" className="text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl lg:text-4xl">
+              {data.title}
+            </h2>
+          )}
+          <div className="relative mt-6 space-y-4 border-l-4 pl-5 text-base leading-relaxed text-slate-600 sm:text-lg" style={{ borderImage: 'linear-gradient(to bottom, #2563FF, #7C3AED, #FF7A18) 1' }}>
+            {paragraphs.map((p, i) => (
+              <p key={i} className="whitespace-pre-line">{p}</p>
+            ))}
+          </div>
+          {(data.name || data.designation) && (
+            <div className="mt-7 flex items-center gap-4">
+              <span className="h-px w-10 bg-gradient-to-r from-violet-500 to-flame-500" />
+              <div>
+                {data.name && <p className="font-['Brush_Script_MT',cursive] text-2xl text-navy-900">{data.name}</p>}
+                {data.designation && <p className="text-sm font-medium text-slate-500">{data.designation}</p>}
+              </div>
+            </div>
+          )}
+          {data.highlights && data.highlights.length > 0 && (
+            <ul className="mt-7 flex flex-wrap gap-2.5">
+              {data.highlights.filter((h) => h.label).map((h) => (
+                <li key={h.label} className="chip bg-white px-4 py-2 text-sm text-navy-800 shadow-sm ring-1 ring-slate-200">
+                  <BadgeCheck className="h-4 w-4 text-emerald-500" /> {h.label}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const { data, isLoading, error, refetch } = useQuery({ queryKey: ['public', 'home'], queryFn: () => get<HomeData>('/public/home') });
   const { data: site } = useSite();
@@ -263,6 +349,9 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* Founder & owner message (Website CMS → Founder & Owner Message) */}
+      {data?.founderMessage && data.founderMessage.enabled !== false && <FounderMessage data={data.founderMessage} />}
 
       {/* E. Featured mobiles */}
       <section className="bg-gradient-to-b from-white to-slate-50 py-16 lg:py-20">

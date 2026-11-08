@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.docker
+*.log
+server/uploads/
+server/backups/
+*.dump
+.DS_Store

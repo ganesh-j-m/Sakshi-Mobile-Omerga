@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply font-sans;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-electric-500 ring-offset-2;
+  }
+  ::selection {
+    @apply bg-violet-500/30;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-gradient-to-r from-electric-400 via-violet-400 to-flame-400 bg-clip-text text-transparent;
+  }
+  .text-gradient-dark {
+    @apply bg-gradient-to-r from-electric-600 via-violet-600 to-flame-500 bg-clip-text text-transparent;
+  }
+  .glass {
+    @apply border border-white/10 bg-white/5 backdrop-blur-xl;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200/70 bg-white shadow-card;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-slate-400 transition focus:border-electric-500 focus:outline-none focus:ring-4 focus:ring-electric-500/15 disabled:bg-slate-50;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+  .animated-gradient {
+    background-size: 200% 200%;
+    @apply animate-gradient-x;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .grid-bg {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+}
+
+/* Swiper pagination on dark & light surfaces */
+.swiper-pagination-bullet {
+  background: #94a3b8 !important;
+  opacity: 0.6 !important;
+}
+.swiper-pagination-bullet-active {
+  width: 22px !important;
+  border-radius: 999px !important;
+  opacity: 1 !important;
+  background: linear-gradient(90deg, #2563ff, #7c3aed) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Invoice printing */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

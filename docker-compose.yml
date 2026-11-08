@@ -1,0 +1,49 @@
+# Production-like stack: PostgreSQL + Sakshi Mobile app
+#   cp .env.docker.example .env.docker   (fill in secrets)
+#   docker compose --env-file .env.docker up -d --build
+#   docker compose exec app node dist/db/seed.js     (first time only)
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sakshi_mobile
+      POSTGRES_USER: ${POSTGRES_USER:-sakshi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-sakshi} -d sakshi_mobile']
+      interval: 10s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-sakshi}:${POSTGRES_PASSWORD}@db:5432/sakshi_mobile
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      CLIENT_URL: ${PUBLIC_SITE_URL:?set PUBLIC_SITE_URL}
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      SEED_SUPER_ADMIN_LOGIN: ${SEED_SUPER_ADMIN_LOGIN:-superadmin}
+      SEED_SUPER_ADMIN_PASSWORD: ${SEED_SUPER_ADMIN_PASSWORD:?set SEED_SUPER_ADMIN_PASSWORD}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+      WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-bill_invoice}
+      WHATSAPP_TEMPLATE_LANG: ${WHATSAPP_TEMPLATE_LANG:-en}
+      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION:-v23.0}
+    volumes:
+      - appdata:/data
+    ports:
+      - '127.0.0.1:4000:4000' # put Nginx/Caddy with HTTPS in front
+
+volumes:
+  pgdata:
+  appdata:

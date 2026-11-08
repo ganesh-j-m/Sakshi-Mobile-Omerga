@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { env, maskUrl } from '../config/env.js';
 import { db, pool } from './index.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -9,6 +10,7 @@ const migrationsFolder = path.resolve(here, '../../drizzle');
 
 async function main() {
   console.log(`⏳ Running migrations from ${migrationsFolder}`);
+  console.log(`   Database: ${maskUrl(env.DATABASE_URL)}`);
   await migrate(db, { migrationsFolder });
   console.log('✅ Migrations complete');
   await pool.end();

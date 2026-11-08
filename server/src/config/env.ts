@@ -1,6 +1,11 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
+/** Hide the password when printing a connection string in logs. */
+export function maskUrl(v: string) {
+  return v.replace(/(\/\/[^:/@]+:)[^@]*@/, '$1****@').slice(0, 160) || '(empty)';
+}
+
 const bool = z
   .enum(['true', 'false', '1', '0', ''])
   .optional()
@@ -9,7 +14,20 @@ const bool = z
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  DATABASE_URL: z
+    .string({ required_error: 'DATABASE_URL is required' })
+    // Forgive common copy-paste mistakes: quotes, spaces, "DATABASE_URL=" or "psql '...'" wrappers
+    .transform((v) =>
+      v
+        .trim()
+        .replace(/^DATABASE_URL\s*=\s*/i, '')
+        .replace(/^psql\s+/i, '')
+        .replace(/^['"]+|['"]+$/g, '')
+        .trim(),
+    )
+    .refine((v) => /^postgres(ql)?:\/\/[^@\s]+@[^/\s]+\/\S+$/.test(v), (v) => ({
+      message: `DATABASE_URL must look like postgresql://user:password@host/dbname — got "${maskUrl(v)}"`,
+    })),
   DATABASE_SSL: bool,
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(12),
